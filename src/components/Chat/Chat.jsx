@@ -10,18 +10,25 @@ import {
 } from "firebase/firestore";
 import styles from "./Chat.module.scss";
 
-export default function Chat({ user }) {
+export default function Chat({ user, roomId }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    const q = query(collection(db, "messages"), orderBy("timestamp"));
+    if (!roomId) return;
+
+    const q = query(
+      collection(db, `chatRooms/${roomId}/messages`),
+      orderBy("timestamp")
+    );
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setMessages(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
+
     return () => unsubscribe();
-  }, []);
+  }, [roomId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,17 +36,17 @@ export default function Chat({ user }) {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || !roomId) return;
 
-    await addDoc(collection(db, "messages"), {
+    setMessage(""); // clear input early to prevent double send
+
+    await addDoc(collection(db, `chatRooms/${roomId}/messages`), {
       text: message,
       uid: user.uid,
       displayName: user.displayName,
       photoURL: user.photoURL,
       timestamp: serverTimestamp(),
     });
-
-    setMessage("");
   };
 
   return (
@@ -94,7 +101,9 @@ export default function Chat({ user }) {
       <form onSubmit={handleSend} className={styles.chat_input}>
         <input
           value={message}
+          name="message-input"
           onChange={(e) => setMessage(e.target.value)}
+          aria-label="Type your message..."
           placeholder="Type your message..."
         />
         <button type="submit">Send</button>
