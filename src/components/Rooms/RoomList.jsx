@@ -16,8 +16,9 @@ import {
 import { db } from "../../firebase";
 import styles from "./RoomList.module.scss";
 import Modal from "../Modal/Modal";
+import modalStyles from "../Modal/Modal.module.scss";
 
-export default function RoomList({ user, onJoinRoom, selectedRoom }) {
+export default function RoomList({ user, onJoinRoom, selectedRoom, onLogout, isOpen, setIsOpen }) {
   const [rooms, setRooms] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("create"); // 'create' | 'join'
@@ -150,41 +151,57 @@ export default function RoomList({ user, onJoinRoom, selectedRoom }) {
   };
 
   return (
-    <div className={styles.sidebar}>
-      <div className={styles.header}>
-        <h2>Chats</h2>
-        <button onClick={() => setModalOpen(true)} className={styles.addRoomBtn}>
-          +
-        </button>
-      </div>
-      <ul className={styles.roomList}>
-        {rooms.map((room) => (
-          <li
-            key={room.id}
-            className={selectedRoom?.id === room.id ? styles.active : ""}
-            onClick={() => onJoinRoom(room)}
-          >
-            <div className={styles.avatar}>💬</div>
-            <div className={styles.roomInfo}>
-              <div className={styles.name}>{room.name}</div>
-              <div className={styles.latest}>
-                {room.latestMessage || "No messages yet"}
-              </div>
+    <>
+      {/* Sidebar toggle, always visible and stuck to the sidebar edge */}
+      <button
+        className={`${styles.sidebarToggle} ${isOpen ? styles.sidebarOpen : styles.sidebarClosed}`}
+        onClick={() => setIsOpen?.(!isOpen)}
+        aria-label={isOpen ? "Close rooms sidebar" : "Open rooms sidebar"}
+        title={isOpen ? "Close" : "Open"}
+      >
+        {isOpen ? "‹" : "›"}
+      </button>
+
+      <div className={`${styles.sidebar} ${isOpen ? styles.open : ""}`}>
+        <div className={styles.profile}>
+          <div className={styles.userRow}>
+            <img src={user.photoURL} alt={user.displayName} className={styles.avatarLarge} />
+            <div className={styles.userInfo}>
+              <div className={styles.displayName}>{user.displayName}</div>
+              <button className={styles.logout_btn} onClick={onLogout}>Sign Out</button>
             </div>
-          </li>
-        ))}
-      </ul>
+            <button onClick={() => setModalOpen(true)} className={styles.addRoomBtn} title="Create room">+</button>
+          </div>
+        </div>
+        <ul className={styles.roomList}>
+          {rooms.map((room) => (
+            <li
+              key={room.id}
+              className={selectedRoom?.id === room.id ? styles.active : ""}
+              onClick={() => onJoinRoom(room)}
+            >
+              <div className={styles.avatar}>💬</div>
+              <div className={styles.roomInfo}>
+                <div className={styles.name}>{room.name}</div>
+                <div className={styles.latest}>
+                  {room.latestMessage || "No messages yet"}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <Modal open={modalOpen} onClose={() => { setModalOpen(false); setError(""); }}>
-        <div className={styles.modalTabs}>
+        <div className={modalStyles.modalTabs}>
           <button
-            className={modalMode === "create" ? styles.activeTab : ""}
+            className={modalMode === "create" ? modalStyles.activeTab : ""}
             onClick={() => { setModalMode("create"); setError(""); }}
           >
             Create
           </button>
           <button
-            className={modalMode === "join" ? styles.activeTab : ""}
+            className={modalMode === "join" ? modalStyles.activeTab : ""}
             onClick={() => { setModalMode("join"); setError(""); }}
           >
             Join
@@ -225,12 +242,12 @@ export default function RoomList({ user, onJoinRoom, selectedRoom }) {
                 type="password"
                 required
               />
-              {error && <div className={styles.error}>{error}</div>}
+              {error && <div className={modalStyles.error}>{error}</div>}
               <button type="submit">Join</button>
             </form>
           </>
         )}
       </Modal>
-    </div>
+    </>
   );
 }

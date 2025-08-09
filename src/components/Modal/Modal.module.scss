@@ -41,3 +41,30 @@
     }
   }
 }
+
+// Shared modal UI helpers
+.modalTabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  button {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+    cursor: pointer;
+    border-radius: 6px;
+
+    &.activeTab {
+      background: #007bff;
+      color: #fff;
+      border-color: #007bff;
+    }
+  }
+}
+
+.error {
+  color: #c0392b;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}

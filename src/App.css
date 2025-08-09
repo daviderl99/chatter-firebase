@@ -2,6 +2,16 @@
   display: flex;
   height: 100vh;
   width: 100vw;
+  transition: padding-left 0.3s ease;
+  will-change: padding-left;
+}
+
+.app-split.with-sidebar {
+  padding-left: 260px; /* reserve space for fixed left sidebar when open */
+}
+
+.app-split.full {
+  padding-left: 0; /* full width when sidebar closed */
 }
 
 .chat-placeholder {

@@ -3,7 +3,6 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import LoadingSpinner from "./components/LoadingSpinner/LoadingSpinner";
 import AuthForm from "./components/AuthForm/AuthForm";
-import Sidebar from "./components/Sidebar/Sidebar";
 import RoomList from "./components/Rooms/RoomList";
 import Chat from "./components/Chat/Chat";
 import "./App.css";
@@ -12,6 +11,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [room, setRoom] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -31,9 +31,15 @@ function App() {
 20
   return (
     <>
-      <Sidebar user={user} onLogout={() => signOut(auth)} />
-      <div className="app-split">
-        <RoomList user={user} selectedRoom={room} onJoinRoom={setRoom} />
+      <div className={`app-split ${isSidebarOpen ? "with-sidebar" : "full"}`}>
+        <RoomList
+          user={user}
+          selectedRoom={room}
+          onJoinRoom={setRoom}
+          onLogout={() => signOut(auth)}
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+        />
         {room ? (
           <Chat user={user} roomId={room.id} />
         ) : (
