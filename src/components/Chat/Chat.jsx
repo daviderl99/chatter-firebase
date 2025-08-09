@@ -18,11 +18,13 @@ export default function Chat({ user, roomId }) {
   useEffect(() => {
     if (!roomId) return;
 
+    // Get current room messages and order by timestamp ascending
     const q = query(
       collection(db, `chatRooms/${roomId}/messages`),
       orderBy("timestamp")
     );
 
+    // Listen for live message updates; returns unsubscribe function
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setMessages(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
@@ -31,6 +33,7 @@ export default function Chat({ user, roomId }) {
   }, [roomId]);
 
   useEffect(() => {
+    // Keep the scroll pinned to the latest message whenever the list updates
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -40,6 +43,7 @@ export default function Chat({ user, roomId }) {
 
     setMessage(""); // clear input early to prevent double send
 
+    // Add message to this room with server-side timestamp
     await addDoc(collection(db, `chatRooms/${roomId}/messages`), {
       text: message,
       uid: user.uid,
