@@ -14,6 +14,22 @@ export default function Chat({ user, roomId }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
+  const [expandedMsgId, setExpandedMsgId] = useState(null);
+
+  const formatTimestamp = (ts) => {
+    if (!ts) return "";
+    const ms = ts?.toMillis ? ts.toMillis() : ts;
+    if (!ms) return "";
+    const d = new Date(ms);
+    return d.toLocaleString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
 
   useEffect(() => {
     if (!roomId) return;
@@ -93,8 +109,17 @@ export default function Chat({ user, roomId }) {
                   )}
                 </div>
               )}
+              {expandedMsgId === msg.id && (
+                <div className={styles.timestamp}>{formatTimestamp(msg.timestamp)}</div>
+              )}
               <div>
-                <p>{msg.text}</p>
+                <p
+                  onClick={() =>
+                    setExpandedMsgId((prevId) => (prevId === msg.id ? null : msg.id))
+                  }
+                >
+                  {msg.text}
+                </p>
               </div>
             </div>
           );

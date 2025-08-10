@@ -6,14 +6,6 @@
   will-change: padding-left;
 }
 
-.app-split.with-sidebar {
-  padding-left: 260px; /* reserve space for fixed left sidebar when open */
-}
-
-.app-split.full {
-  padding-left: 0; /* full width when sidebar closed */
-}
-
 .chat-placeholder {
   flex: 5;
   display: flex;
@@ -22,4 +14,21 @@
   color: #888;
   font-size: 1.2rem;
   background: #f9f9f9;
+}
+
+.app-split.full {
+  padding-left: 0;
+  /* full width when sidebar closed */
+}
+
+.app-split.with-sidebar {
+  padding-left: 260px;
+  /* reserve space for fixed left sidebar when open */
+}
+
+/* On small screens, let the sidebar overlay the chat instead of reserving space */
+@media (max-width: 768px) {
+  .app-split.with-sidebar {
+    padding-left: 0;
+  }
 }
