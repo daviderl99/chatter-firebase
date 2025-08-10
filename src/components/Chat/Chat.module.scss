@@ -1,3 +1,17 @@
+// Spinning animation for loader icon
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
 .chat_container {
   flex: 4;
   display: flex;
@@ -67,10 +81,25 @@
       }
     }
 
-    img {
+    // Avatar next to username
+    .avatar {
       width: 36px;
       height: 36px;
       border-radius: 50%;
+      object-fit: cover;
+    }
+
+    // Sent image in message
+    .image {
+      display: block;
+      max-width: min(70vw, 420px);
+      max-height: 60vh;
+      width: auto;
+      height: auto;
+      border-radius: 10px;
+      margin-top: 6px;
+      cursor: pointer;
+      background: #ddd;
     }
 
     .username {
@@ -86,24 +115,5 @@
       }
     }
   }
-
-  .chat_input {
-    display: flex;
-    background: white;
-
-    input {
-      flex: 1;
-      padding: 1.2rem;
-      border: 1px solid #ccc;
-      outline: none;
-    }
-
-    button {
-      padding: 10px 36px;
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-  }
 }
+

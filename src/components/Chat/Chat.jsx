@@ -2,16 +2,14 @@ import { useEffect, useState, useRef } from "react";
 import { db } from "../../firebase";
 import {
   collection,
-  addDoc,
   onSnapshot,
   query,
   orderBy,
-  serverTimestamp,
 } from "firebase/firestore";
 import styles from "./Chat.module.scss";
+import ChatInput from "../ChatInput/ChatInput";
 
 export default function Chat({ user, roomId }) {
-  const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
   const [expandedMsgId, setExpandedMsgId] = useState(null);
@@ -53,21 +51,6 @@ export default function Chat({ user, roomId }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!message.trim() || !roomId) return;
-
-    setMessage(""); // clear input early to prevent double send
-
-    // Add message to this room with server-side timestamp
-    await addDoc(collection(db, `chatRooms/${roomId}/messages`), {
-      text: message,
-      uid: user.uid,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-      timestamp: serverTimestamp(),
-    });
-  };
 
   return (
     <div className={styles.chat_container}>
@@ -99,11 +82,11 @@ export default function Chat({ user, roomId }) {
                   {msg.uid === user.uid ? (
                     <>
                       <span className={styles.username}>{msg.displayName}</span>
-                      <img src={msg.photoURL} alt={msg.displayName} />
+                      <img className={styles.avatar} src={msg.photoURL} alt={msg.displayName} />
                     </>
                   ) : (
                     <>
-                      <img src={msg.photoURL} alt={msg.displayName} />
+                      <img className={styles.avatar} src={msg.photoURL} alt={msg.displayName} />
                       <span className={styles.username}>{msg.displayName}</span>
                     </>
                   )}
@@ -113,30 +96,32 @@ export default function Chat({ user, roomId }) {
                 <div className={styles.timestamp}>{formatTimestamp(msg.timestamp)}</div>
               )}
               <div>
-                <p
-                  onClick={() =>
-                    setExpandedMsgId((prevId) => (prevId === msg.id ? null : msg.id))
-                  }
-                >
-                  {msg.text}
-                </p>
+                {msg.imageUrl && (
+                  <img
+                    className={styles.image}
+                    src={msg.imageUrl}
+                    alt="sent"
+                    onClick={() =>
+                      setExpandedMsgId((prevId) => (prevId === msg.id ? null : msg.id))
+                    }
+                  />
+                )}
+                {msg.text && (
+                  <p
+                    onClick={() =>
+                      setExpandedMsgId((prevId) => (prevId === msg.id ? null : msg.id))
+                    }
+                  >
+                    {msg.text}
+                  </p>
+                )}
               </div>
             </div>
           );
         })}
         <div ref={messagesEndRef} />
       </div>
-
-      <form onSubmit={handleSend} className={styles.chat_input}>
-        <input
-          value={message}
-          name="message-input"
-          onChange={(e) => setMessage(e.target.value)}
-          aria-label="Type your message..."
-          placeholder="Type your message..."
-        />
-        <button type="submit">Send</button>
-      </form>
+      <ChatInput user={user} roomId={roomId} />
     </div>
   );
 }

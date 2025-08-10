@@ -1,0 +1,105 @@
+.chat_input_container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    padding: 8px;
+    background: white;
+}
+
+.chat_input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+
+    input {
+        flex: 1;
+        padding: 0 12px;
+        height: 44px;
+        border: 1px solid #ccc;
+        outline: none;
+        border-radius: 8px;
+    }
+}
+
+// Square icon buttons matching input height with centered icons
+.icon_button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+
+    svg {
+        width: 20px;
+        height: 20px;
+        display: block;
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+}
+
+.preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+
+    img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+
+    .file_info {
+        flex: 1;
+        min-width: 0;
+
+        .file_name {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 14px;
+            color: #333;
+        }
+    }
+
+    .remove_button {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #666;
+        padding: 4px 8px;
+        border-radius: 4px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+
+        &:hover {
+            background: #e0e0e0;
+        }
+    }
+}
