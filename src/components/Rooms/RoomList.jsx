@@ -13,18 +13,39 @@ import {
   doc,
   arrayUnion,
 } from "firebase/firestore";
-import { db } from "../../firebase";
+import { auth, db } from "../../firebase";
+import { updateProfile } from "firebase/auth";
 import styles from "./RoomList.module.scss";
 import Modal from "../Modal/Modal";
 import modalStyles from "../Modal/Modal.module.scss";
+import SettingsIcon from "../icons/SettingsIcon";
+import Settings from "../Settings/Settings";
 
-export default function RoomList({ user, onJoinRoom, selectedRoom, onLogout, isOpen, setIsOpen }) {
+export default function RoomList({
+  user,
+  onJoinRoom,
+  selectedRoom,
+  onLogout,
+  isOpen,
+  setIsOpen,
+}) {
   const [rooms, setRooms] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("create"); // 'create' | 'join'
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const handleUpdateProfile = async (profileData) => {
+    try {
+      await updateProfile(auth.currentUser, profileData);
+      return true;
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -70,18 +91,27 @@ export default function RoomList({ user, onJoinRoom, selectedRoom, onLogout, isO
             latestTimestamp: msgDoc?.data()?.timestamp?.toMillis?.() || 0,
           };
           // Sort by latestTimestamp desc
-          setRooms([...roomsArr].sort((a, b) => (b.latestTimestamp || 0) - (a.latestTimestamp || 0)));
+          setRooms(
+            [...roomsArr].sort(
+              (a, b) => (b.latestTimestamp || 0) - (a.latestTimestamp || 0)
+            )
+          );
         });
         messageUnsubs.push(unsubMsg);
       });
       // Initial sort (all timestamps might be null)
-      setRooms([...roomsArr].sort((a, b) => (b.latestTimestamp || 0) - (a.latestTimestamp || 0)));
+      setRooms(
+        [...roomsArr].sort(
+          (a, b) => (b.latestTimestamp || 0) - (a.latestTimestamp || 0)
+        )
+      );
     });
+
     return () => {
       unsubRooms();
       messageUnsubs.forEach((unsub) => unsub());
     };
-  }, [user?.uid]);
+  }, [user?.uid, onLogout]);
 
   const createRoom = async (e) => {
     e.preventDefault();
@@ -154,7 +184,9 @@ export default function RoomList({ user, onJoinRoom, selectedRoom, onLogout, isO
     <>
       {/* Sidebar toggle, always visible and stuck to the sidebar edge */}
       <button
-        className={`${styles.sidebarToggle} ${isOpen ? styles.sidebarOpen : styles.sidebarClosed}`}
+        className={`${styles.sidebarToggle} ${
+          isOpen ? styles.sidebarOpen : styles.sidebarClosed
+        }`}
         onClick={() => setIsOpen?.(!isOpen)}
         aria-label={isOpen ? "Close rooms sidebar" : "Open rooms sidebar"}
         title={isOpen ? "Close" : "Open"}
@@ -165,15 +197,39 @@ export default function RoomList({ user, onJoinRoom, selectedRoom, onLogout, isO
       <div className={`${styles.sidebar} ${isOpen ? styles.open : ""}`}>
         <div className={styles.profile}>
           <div className={styles.userRow}>
-            <img src={user.photoURL} alt={user.displayName} className={styles.avatarLarge} />
+            <img
+              src={user.photoURL}
+              alt={user.displayName}
+              className={styles.avatarLarge}
+            />
+
             <div className={styles.userInfo}>
-              <div className={styles.displayName}>{user.displayName}</div>
-              <button className={styles.logout_btn} onClick={onLogout}>Sign Out</button>
+              <div className={styles.usernameRow}>
+                <span className={styles.displayName}>{user.displayName}</span>
+              </div>
+              <button className={styles.logout_btn} onClick={onLogout}>
+                Sign Out
+              </button>
             </div>
-            <button onClick={() => setModalOpen(true)} className={styles.addRoomBtn} title="Create room">+</button>
+            <div className={styles.roomActions}>
+              <button
+                className={styles.settingsButton}
+                onClick={() => setIsSettingsOpen(true)}
+                aria-label="Settings"
+              >
+                <SettingsIcon />
+              </button>
+            </div>
           </div>
         </div>
         <ul className={styles.roomList}>
+          <button
+            className={styles.addRoomBtn}
+            onClick={() => setModalOpen(true)}
+            title="Create room"
+          >
+            +
+          </button>
           {rooms.map((room) => (
             <li
               key={room.id}
@@ -192,17 +248,29 @@ export default function RoomList({ user, onJoinRoom, selectedRoom, onLogout, isO
         </ul>
       </div>
 
-      <Modal open={modalOpen} onClose={() => { setModalOpen(false); setError(""); }}>
+      <Modal
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setError("");
+        }}
+      >
         <div className={modalStyles.modalTabs}>
           <button
             className={modalMode === "create" ? modalStyles.activeTab : ""}
-            onClick={() => { setModalMode("create"); setError(""); }}
+            onClick={() => {
+              setModalMode("create");
+              setError("");
+            }}
           >
             Create
           </button>
           <button
             className={modalMode === "join" ? modalStyles.activeTab : ""}
-            onClick={() => { setModalMode("join"); setError(""); }}
+            onClick={() => {
+              setModalMode("join");
+              setError("");
+            }}
           >
             Join
           </button>
@@ -248,6 +316,13 @@ export default function RoomList({ user, onJoinRoom, selectedRoom, onLogout, isO
           </>
         )}
       </Modal>
+
+      <Settings
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        user={user}
+        onUpdateProfile={handleUpdateProfile}
+      />
     </>
   );
 }

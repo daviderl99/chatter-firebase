@@ -4,7 +4,8 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
-import { auth } from "../../firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../../firebase";
 import styles from "./AuthForm.module.scss";
 
 export default function AuthForm({ onAuth }) {
@@ -13,6 +14,18 @@ export default function AuthForm({ onAuth }) {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
+
+  const saveUserProfile = async (user) => {
+    if (!user) return;
+    await setDoc(
+      doc(db, "users", user.uid),
+      {
+        displayName: user.displayName || "Unknown",
+        photoURL: user.photoURL || "",
+      },
+      { merge: true }
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,14 +39,17 @@ export default function AuthForm({ onAuth }) {
           password
         );
 
+        const generatedPhoto = `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(
+          username
+        )}`;
+
         await updateProfile(user, {
           displayName: username,
-          photoURL: `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(
-            username
-          )}`,
+          photoURL: generatedPhoto,
         });
 
-        // Immediately update parent with fresh user
+        await saveUserProfile(auth.currentUser); // sync Firestore
+
         onAuth({ ...auth.currentUser });
       } else {
         const { user } = await signInWithEmailAndPassword(
@@ -41,6 +57,9 @@ export default function AuthForm({ onAuth }) {
           email,
           password
         );
+
+        await saveUserProfile(user); // ensure Firestore has latest
+
         onAuth(user);
       }
     } catch (err) {

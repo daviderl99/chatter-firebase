@@ -60,7 +60,7 @@
     }
 
     // If a timestamp is shown right before the wrapping div>p, remove the bubble's top margin
-    .timestamp+div>p {
+    .timestamp + div > p {
       margin-top: 0;
     }
 
@@ -116,4 +116,3 @@
     }
   }
 }
-

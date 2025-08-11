@@ -1,10 +1,6 @@
 import { useRef, useState } from "react";
 import { db, storage } from "../../firebase";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import styles from "./ChatInput.module.scss";
 import ImageIcon from "../icons/ImageIcon";
@@ -16,7 +12,7 @@ export default function ChatInput({ user, roomId }) {
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [fileName, setFileName] = useState('');
+  const [fileName, setFileName] = useState("");
   const fileInputRef = useRef(null);
 
   const handleImagePickClick = () => {
@@ -44,7 +40,7 @@ export default function ChatInput({ user, roomId }) {
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
     setImageFile(null);
-    setFileName('');
+    setFileName("");
   };
 
   const handleSend = async (e) => {
@@ -59,7 +55,9 @@ export default function ChatInput({ user, roomId }) {
     try {
       if (hasImage) {
         setUploading(true);
-        const path = `chatRooms/${roomId}/images/${user.uid}-${Date.now()}-${imageFile.name}`;
+        const path = `chatRooms/${roomId}/images/${user.uid}-${Date.now()}-${
+          imageFile.name
+        }`;
         const storageRef = ref(storage, path);
         await uploadBytes(storageRef, imageFile);
         imageUrl = await getDownloadURL(storageRef);
@@ -90,7 +88,12 @@ export default function ChatInput({ user, roomId }) {
           <div className={styles.file_info}>
             <span className={styles.file_name}>{fileName}</span>
           </div>
-          <button type="button" onClick={clearSelectedImage} className={styles.remove_button} aria-label="Remove selected image">
+          <button
+            type="button"
+            onClick={clearSelectedImage}
+            className={styles.remove_button}
+            aria-label="Remove selected image"
+          >
             ×
           </button>
         </div>
@@ -104,25 +107,33 @@ export default function ChatInput({ user, roomId }) {
           placeholder="Type your message..."
         />
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        style={{ display: "none" }}
-      />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          style={{ display: "none" }}
+        />
 
-      <button
-        type="button"
-        onClick={handleImagePickClick}
-        aria-label="Attach image"
-        className={styles.icon_button}
-      >
-        <ImageIcon />
-      </button>
+        <button
+          type="button"
+          onClick={handleImagePickClick}
+          aria-label="Attach image"
+          className={styles.icon_button}
+        >
+          <ImageIcon />
+        </button>
 
-        <button type="submit" disabled={uploading} className={styles.icon_button}>
-          {uploading ? <LoaderCircleIcon className={styles.spin} /> : <SendIcon />}
+        <button
+          type="submit"
+          disabled={uploading}
+          className={styles.icon_button}
+        >
+          {uploading ? (
+            <LoaderCircleIcon className={styles.spin} />
+          ) : (
+            <SendIcon />
+          )}
         </button>
       </form>
     </div>

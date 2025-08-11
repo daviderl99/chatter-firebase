@@ -5,12 +5,14 @@ import {
   onSnapshot,
   query,
   orderBy,
+  doc,
 } from "firebase/firestore";
 import styles from "./Chat.module.scss";
 import ChatInput from "../ChatInput/ChatInput";
 
 export default function Chat({ user, roomId }) {
   const [messages, setMessages] = useState([]);
+  const [usersData, setUsersData] = useState({});
   const messagesEndRef = useRef(null);
   const [expandedMsgId, setExpandedMsgId] = useState(null);
 
@@ -29,46 +31,60 @@ export default function Chat({ user, roomId }) {
     });
   };
 
+  // Listen for room messages
   useEffect(() => {
     if (!roomId) return;
 
-    // Get current room messages and order by timestamp ascending
     const q = query(
       collection(db, `chatRooms/${roomId}/messages`),
       orderBy("timestamp")
     );
 
-    // Listen for live message updates; returns unsubscribe function
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setMessages(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      const msgs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setMessages(msgs);
+
+      // Collect all unique UIDs from messages
+      const uids = [...new Set(msgs.map((m) => m.uid))];
+
+      // Subscribe to each user's profile in Firestore
+      uids.forEach((uid) => {
+        if (!usersData[uid]) {
+          onSnapshot(doc(db, "users", uid), (snap) => {
+            if (snap.exists()) {
+              setUsersData((prev) => ({
+                ...prev,
+                [uid]: snap.data(),
+              }));
+            }
+          });
+        }
+      });
     });
 
     return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId]);
 
+  // Scroll to bottom when messages update
   useEffect(() => {
-    // Keep the scroll pinned to the latest message whenever the list updates
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
 
   return (
     <div className={styles.chat_container}>
       <div className={styles.messages}>
         {messages.map((msg, i) => {
           const prev = messages[i - 1];
+          const ONE_MINUTE = 60000;
+          const getMillis = (ts) => (ts?.toMillis ? ts.toMillis() : ts);
 
-          // Check if sender changed or time diff > 1 min (60000ms)
           const showMeta =
             !prev ||
             msg.uid !== prev.uid ||
-            (msg.timestamp?.toMillis
-              ? msg.timestamp.toMillis()
-              : msg.timestamp) -
-              (prev.timestamp?.toMillis
-                ? prev.timestamp.toMillis()
-                : prev.timestamp) >
-              60000;
+            getMillis(msg.timestamp) - getMillis(prev.timestamp) > ONE_MINUTE;
+
+          const sender = usersData[msg.uid] || {};
 
           return (
             <div
@@ -81,19 +97,33 @@ export default function Chat({ user, roomId }) {
                 <div className={styles.meta}>
                   {msg.uid === user.uid ? (
                     <>
-                      <span className={styles.username}>{msg.displayName}</span>
-                      <img className={styles.avatar} src={msg.photoURL} alt={msg.displayName} />
+                      <span className={styles.username}>
+                        {sender.displayName || "Unknown"}
+                      </span>
+                      <img
+                        className={styles.avatar}
+                        src={sender.photoURL || ""}
+                        alt={sender.displayName || "User"}
+                      />
                     </>
                   ) : (
                     <>
-                      <img className={styles.avatar} src={msg.photoURL} alt={msg.displayName} />
-                      <span className={styles.username}>{msg.displayName}</span>
+                      <img
+                        className={styles.avatar}
+                        src={sender.photoURL || ""}
+                        alt={sender.displayName || "User"}
+                      />
+                      <span className={styles.username}>
+                        {sender.displayName || "Unknown"}
+                      </span>
                     </>
                   )}
                 </div>
               )}
               {expandedMsgId === msg.id && (
-                <div className={styles.timestamp}>{formatTimestamp(msg.timestamp)}</div>
+                <div className={styles.timestamp}>
+                  {formatTimestamp(msg.timestamp)}
+                </div>
               )}
               <div>
                 {msg.imageUrl && (
@@ -102,14 +132,18 @@ export default function Chat({ user, roomId }) {
                     src={msg.imageUrl}
                     alt="sent"
                     onClick={() =>
-                      setExpandedMsgId((prevId) => (prevId === msg.id ? null : msg.id))
+                      setExpandedMsgId((prevId) =>
+                        prevId === msg.id ? null : msg.id
+                      )
                     }
                   />
                 )}
                 {msg.text && (
                   <p
                     onClick={() =>
-                      setExpandedMsgId((prevId) => (prevId === msg.id ? null : msg.id))
+                      setExpandedMsgId((prevId) =>
+                        prevId === msg.id ? null : msg.id
+                      )
                     }
                   >
                     {msg.text}
