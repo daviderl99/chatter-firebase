@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   collection,
   addDoc,
@@ -20,6 +20,7 @@ import Modal from "../Modal/Modal";
 import modalStyles from "../Modal/Modal.module.scss";
 import SettingsIcon from "../icons/SettingsIcon";
 import Settings from "../Settings/Settings";
+import ErrorMessage from "../shared/ErrorMessage";
 
 export default function RoomList({
   user,
@@ -36,6 +37,7 @@ export default function RoomList({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const roomsRef = useRef([]);
 
   const handleUpdateProfile = async (profileData) => {
     try {
@@ -49,25 +51,26 @@ export default function RoomList({
 
   useEffect(() => {
     if (!user?.uid) return;
-    // Get rooms where current user is in the members array
     const roomsQuery = query(
       collection(db, "chatRooms"),
       where("members", "array-contains", user.uid)
     );
     let messageUnsubs = [];
-    // Realtime listener for the above rooms query
-    // onSnapshot keeps the UI in sync with any room changes without manual refresh
+
     const unsubRooms = onSnapshot(roomsQuery, (snapshot) => {
       const roomDocs = snapshot.docs;
+      // Build new roomsArr, but preserve latestMessage/timestamp if possible
       let roomsArr = roomDocs.map((doc) => {
         const data = doc.data();
+        // Try to keep previous latestMessage/timestamp if room already exists
+        const prev = roomsRef.current.find((r) => r.id === doc.id);
         return {
           id: doc.id,
           name: data.name,
           password: data.password || null,
           members: data.members || [],
-          latestMessage: null,
-          latestTimestamp: null,
+          latestMessage: prev?.latestMessage ?? null,
+          latestTimestamp: prev?.latestTimestamp ?? null,
         };
       });
 
@@ -75,36 +78,53 @@ export default function RoomList({
       messageUnsubs.forEach((unsub) => unsub());
       messageUnsubs = [];
 
-      // Listen for each room's latest message to update preview & sort list
-      roomsArr.forEach((room, idx) => {
+      // Listen for each room's latest message
+      roomsArr.forEach((room) => {
         const msgQuery = query(
           collection(db, `chatRooms/${room.id}/messages`),
           orderBy("timestamp", "desc"),
           limit(1)
         );
-        // Realtime listener for the latest message in this room
         const unsubMsg = onSnapshot(msgQuery, (msgSnap) => {
           const msgDoc = msgSnap.docs[0];
-          roomsArr[idx] = {
-            ...roomsArr[idx],
-            latestMessage: msgDoc?.data()?.text || "",
-            latestTimestamp: msgDoc?.data()?.timestamp?.toMillis?.() || 0,
-          };
-          // Sort by latestTimestamp desc
-          setRooms(
-            [...roomsArr].sort(
+          // Update only the relevant room in state
+          setRooms((prevRooms) => {
+            const updated = prevRooms.map((r) =>
+              r.id === room.id
+                ? {
+                    ...r,
+                    latestMessage: msgDoc?.data()?.text || "",
+                    latestTimestamp:
+                      msgDoc?.data()?.timestamp?.toMillis?.() || 0,
+                  }
+                : r
+            );
+            roomsRef.current = updated;
+            // Sort by latestTimestamp desc
+            return [...updated].sort(
               (a, b) => (b.latestTimestamp || 0) - (a.latestTimestamp || 0)
-            )
-          );
+            );
+          });
         });
         messageUnsubs.push(unsubMsg);
       });
-      // Initial sort (all timestamps might be null)
-      setRooms(
-        [...roomsArr].sort(
+
+      // Initial set (preserve previous latestMessage/timestamp)
+      setRooms((prevRooms) => {
+        // Try to keep previous latestMessage/timestamp if possible
+        const merged = roomsArr.map((room) => {
+          const prev = prevRooms.find((r) => r.id === room.id);
+          return {
+            ...room,
+            latestMessage: prev?.latestMessage ?? room.latestMessage,
+            latestTimestamp: prev?.latestTimestamp ?? room.latestTimestamp,
+          };
+        });
+        roomsRef.current = merged;
+        return [...merged].sort(
           (a, b) => (b.latestTimestamp || 0) - (a.latestTimestamp || 0)
-        )
-      );
+        );
+      });
     });
 
     return () => {
@@ -115,7 +135,21 @@ export default function RoomList({
 
   const createRoom = async (e) => {
     e.preventDefault();
+    setError("");
     if (!name.trim() || !password.trim()) return;
+
+    // Check if a room with this name already exists
+    const q = query(
+      collection(db, "chatRooms"),
+      where("name", "==", name.trim())
+    );
+    const qSnap = await getDocs(q);
+    if (!qSnap.empty) {
+      setError(
+        "A room with this name already exists. Please choose another name."
+      );
+      return;
+    }
 
     // Create new room with creator as sole member and server timestamp
     await addDoc(collection(db, "chatRooms"), {
@@ -226,9 +260,10 @@ export default function RoomList({
           <button
             className={styles.addRoomBtn}
             onClick={() => setModalOpen(true)}
-            title="Create room"
+            title="Create or join a room"
           >
-            +
+            <span className={styles.addRoomIcon}>+</span>
+            <span className={styles.addRoomText}>Create or Join a Room</span>
           </button>
           {rooms.map((room) => (
             <li
@@ -291,6 +326,7 @@ export default function RoomList({
                 type="password"
                 required
               />
+              {error && <ErrorMessage>{error}</ErrorMessage>}
               <button type="submit">Create</button>
             </form>
           </>
@@ -310,7 +346,7 @@ export default function RoomList({
                 type="password"
                 required
               />
-              {error && <div className={modalStyles.error}>{error}</div>}
+              {error && <ErrorMessage>{error}</ErrorMessage>}
               <button type="submit">Join</button>
             </form>
           </>

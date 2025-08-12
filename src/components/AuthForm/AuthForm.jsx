@@ -7,6 +7,29 @@ import {
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import styles from "./AuthForm.module.scss";
+import ErrorMessage from "../shared/ErrorMessage";
+
+// Map Firebase error codes to messages
+function getAuthErrorMessage(error) {
+  if (!error?.code && typeof error === "string") return error;
+  if (!error?.code) return "An unknown error occurred.";
+  switch (error.code) {
+    case "auth/user-not-found":
+      return "No account found with this email.";
+    case "auth/invalid-credential":
+      return "Email or password is incorrect.";
+    case "auth/email-already-in-use":
+      return "This email is already registered.";
+    case "auth/invalid-email":
+      return "Please enter a valid email address.";
+    case "auth/password-does-not-meet-requirements":
+      return "Password must contain at least 6 characters, a capital letter, and one number.";
+    case "auth/too-many-requests":
+      return "Too many failed attempts. Please try again later.";
+    default:
+      return error.message || "An unknown error occurred.";
+  }
+}
 
 export default function AuthForm({ onAuth }) {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -63,7 +86,7 @@ export default function AuthForm({ onAuth }) {
         onAuth(user);
       }
     } catch (err) {
-      setError(err.message);
+      setError(err);
     }
   };
 
@@ -97,7 +120,7 @@ export default function AuthForm({ onAuth }) {
         />
       )}
 
-      {error && <p className={styles.error}>{error}</p>}
+      {error && <ErrorMessage>{getAuthErrorMessage(error)}</ErrorMessage>}
 
       <button type="submit">{isRegistering ? "Sign Up" : "Log In"}</button>
 
