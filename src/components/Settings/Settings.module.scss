@@ -1,157 +1,157 @@
-.modalContent {
-  background: white;
-  padding: 2rem;
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
+.settings {
+  padding: 1.5rem;
 
-.modalHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
 
-  h2 {
-    margin: 0;
-    color: #333;
-    font-size: 1.5rem;
-  }
-}
-
-.closeButton {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #666;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-
-  &:hover {
-    background-color: #f5f5f5;
-    color: #333;
-  }
-}
-
-.settingsForm {
-  display: flex;
-  // flex-direction: column;
-  gap: 1.5rem;
-}
-
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  label {
-    font-weight: 500;
-    color: #444;
-  }
-
-  input[type="text"],
-  input[type="url"] {
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
-    transition: border-color 0.2s;
-
-    &:focus {
-      outline: none;
-      border-color: #4a90e2;
-      box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+    h2 {
+      margin: 0;
+      color: #222;
+      font-size: 1.5rem;
+      font-weight: 700;
     }
   }
-}
 
-.uploadContainer {
-  margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-.fileInput {
-  display: none;
-}
-
-.uploadButton {
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #e0e0e0;
-    border-color: #ccc;
-  }
-}
-
-.previewContainer {
-  margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-
-  p {
-    margin: 0;
-    color: #666;
-    font-size: 0.9rem;
-  }
-}
-
-.profilePreview {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #eee;
-}
-
-.formActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-
-  button {
-    padding: 0.75rem 1.5rem;
+  .closeButton {
+    background: transparent;
     border: none;
-    border-radius: 4px;
-    font-weight: 500;
+    font-size: 1.8rem;
+    color: #666;
     cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.9rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
 
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+    &:hover {
+      background-color: #f0f0f0;
+      color: #333;
     }
   }
-}
 
-.cancelButton {
-  background-color: #f5f5f5;
-  color: #666;
-
-  &:hover:not(:disabled) {
-    background-color: #e0e0e0;
+  .settingsForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
   }
-}
 
-.saveButton {
-  background-color: #4a90e2;
-  color: white;
+  .formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
 
-  &:hover:not(:disabled) {
-    background-color: #3a7bc8;
+    label {
+      font-weight: 600;
+      color: #444;
+    }
+
+    input {
+      padding: 0.75rem 1rem;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #4a90e2;
+        box-shadow: 0 0 6px rgba(74, 144, 226, 0.3);
+      }
+    }
+  }
+
+  .fileInput {
+    display: none;
+  }
+
+  .uploadButton {
+    background-color: #f0f0f0;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+      background-color: #e0e0e0;
+      border-color: #ccc;
+    }
+  }
+
+  .uploadContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .previewContainer {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+
+    p {
+      margin: 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  }
+
+  .profilePreview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2.5px solid #eee;
+  }
+
+  .formActions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+
+    button {
+      padding: 0.75rem 1.6rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      min-width: 100px;
+      transition: background-color 0.2s ease, opacity 0.2s ease;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .cancelButton {
+    background-color: #f5f5f5;
+    color: #666;
+
+    &:hover:not(:disabled) {
+      background-color: #e0e0e0;
+    }
+  }
+
+  .saveButton {
+    background-color: #007bff;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
   }
 }

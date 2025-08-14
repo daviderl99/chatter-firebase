@@ -17,7 +17,6 @@ import { auth, db } from "../../firebase";
 import { updateProfile } from "firebase/auth";
 import styles from "./RoomList.module.scss";
 import Modal from "../Modal/Modal";
-import modalStyles from "../Modal/Modal.module.scss";
 import SettingsIcon from "../icons/SettingsIcon";
 import Settings from "../Settings/Settings";
 import ErrorMessage from "../shared/ErrorMessage";
@@ -89,16 +88,18 @@ export default function RoomList({
           const msgDoc = msgSnap.docs[0];
           // Update only the relevant room in state
           setRooms((prevRooms) => {
-            const updated = prevRooms.map((r) =>
-              r.id === room.id
-                ? {
-                    ...r,
-                    latestMessage: msgDoc?.data()?.text || "",
-                    latestTimestamp:
-                      msgDoc?.data()?.timestamp?.toMillis?.() || 0,
-                  }
-                : r
-            );
+            const updated = prevRooms.map((r) => {
+              if (r.id === room.id) {
+                const msgData = msgDoc?.data();
+                return {
+                  ...r,
+                  latestMessage: msgData?.text || "",
+                  latestMessageImage: msgData?.messageImageUrl || null,
+                  latestTimestamp: msgData?.timestamp?.toMillis?.() || 0,
+                };
+              }
+              return r;
+            });
             roomsRef.current = updated;
             // Sort by latestTimestamp desc
             return [...updated].sort(
@@ -227,7 +228,6 @@ export default function RoomList({
       >
         {isOpen ? "‹" : "›"}
       </button>
-
       <div className={`${styles.sidebar} ${isOpen ? styles.open : ""}`}>
         <div className={styles.profile}>
           <div className={styles.userRow}>
@@ -263,7 +263,7 @@ export default function RoomList({
             title="Create or join a room"
           >
             <span className={styles.addRoomIcon}>+</span>
-            <span className={styles.addRoomText}>Create or Join a Room</span>
+            <span className={styles.addRoomText}>New Room</span>
           </button>
           {rooms.map((room) => (
             <li
@@ -275,14 +275,17 @@ export default function RoomList({
               <div className={styles.roomInfo}>
                 <div className={styles.name}>{room.name}</div>
                 <div className={styles.latest}>
-                  {room.latestMessage || "No messages yet"}
+                  {room.latestMessageImage ? (
+                    <em>Image</em>
+                  ) : (
+                    room.latestMessage || "No messages yet"
+                  )}
                 </div>
               </div>
             </li>
           ))}
         </ul>
       </div>
-
       <Modal
         open={modalOpen}
         onClose={() => {
@@ -290,67 +293,81 @@ export default function RoomList({
           setError("");
         }}
       >
-        <div className={modalStyles.modalTabs}>
-          <button
-            className={modalMode === "create" ? modalStyles.activeTab : ""}
-            onClick={() => {
-              setModalMode("create");
-              setError("");
-            }}
-          >
-            Create
-          </button>
-          <button
-            className={modalMode === "join" ? modalStyles.activeTab : ""}
-            onClick={() => {
-              setModalMode("join");
-              setError("");
-            }}
-          >
-            Join
-          </button>
+        <div className={styles.roomModal}>
+          <div className={styles.tabs}>
+            <button
+              className={modalMode === "create" ? styles.activeTab : ""}
+              onClick={() => {
+                setModalMode("create");
+                setError("");
+              }}
+              type="button"
+            >
+              Create
+            </button>
+            <button
+              className={modalMode === "join" ? styles.activeTab : ""}
+              onClick={() => {
+                setModalMode("join");
+                setError("");
+              }}
+              type="button"
+            >
+              Join
+            </button>
+          </div>
+          {modalMode === "create" ? (
+            <>
+              <h3 className={styles.title}>Create a Room</h3>
+              <form className={styles.form} onSubmit={createRoom}>
+                <input
+                  className={styles.input}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Room name"
+                  required
+                />
+                <input
+                  className={styles.input}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Room password"
+                  type="password"
+                  required
+                />
+                {error && <ErrorMessage>{error}</ErrorMessage>}
+                <button className={styles.button} type="submit">
+                  Create
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <h3 className={styles.title}>Join a Room</h3>
+              <form className={styles.form} onSubmit={joinRoom}>
+                <input
+                  className={styles.input}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Room name"
+                  required
+                />
+                <input
+                  className={styles.input}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Room password"
+                  type="password"
+                  required
+                />
+                {error && <div className={styles.error}>{error}</div>}
+                <button className={styles.button} type="submit">
+                  Join
+                </button>
+              </form>
+            </>
+          )}
         </div>
-        {modalMode === "create" ? (
-          <>
-            <h3>Create a Room</h3>
-            <form onSubmit={createRoom}>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Room name"
-              />
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Room password"
-                type="password"
-                required
-              />
-              {error && <ErrorMessage>{error}</ErrorMessage>}
-              <button type="submit">Create</button>
-            </form>
-          </>
-        ) : (
-          <>
-            <h3>Join a Room</h3>
-            <form onSubmit={joinRoom}>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Room name"
-              />
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Room password"
-                type="password"
-                required
-              />
-              {error && <ErrorMessage>{error}</ErrorMessage>}
-              <button type="submit">Join</button>
-            </form>
-          </>
-        )}
       </Modal>
 
       <Settings
