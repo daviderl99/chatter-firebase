@@ -1,62 +1,74 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { compressImage } from "../../utils/compressImage";
 import styles from "./Settings.module.scss";
 import Modal from "../Modal/Modal";
 
+const storage = getStorage();
+const db = getFirestore();
+
 const Settings = ({ isOpen, onClose, user, onUpdateProfile }) => {
-  const [username, setUsername] = useState(user?.displayName || "");
-  const [profilePicture, setProfilePicture] = useState(user?.photoURL || "");
+  const [username, setUsername] = useState(user.displayName || "");
+  const [imageSrc, setImageSrc] = useState(user.photoURL || "");
   const [isLoading, setIsLoading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(user?.photoURL || "");
+
+  const fileToUploadRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  const storage = getStorage();
-  const db = getFirestore();
+  // Reset fields when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setUsername(user.displayName || "");
+      setImageSrc(user.photoURL || "");
+      fileToUploadRef.current = null;
+    }
+  }, [isOpen, user]);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
-    const fileUrl = URL.createObjectURL(file);
-    setPreviewUrl(fileUrl);
-    setProfilePicture(file);
+    try {
+      const compressed = await compressImage(file);
+      fileToUploadRef.current = compressed;
+      setImageSrc(URL.createObjectURL(compressed));
+    } catch (err) {
+      console.error("Image compression failed:", err);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!username.trim()) return;
-
     setIsLoading(true);
-    try {
-      let photoURL = user.photoURL;
 
-      if (profilePicture instanceof File) {
+    try {
+      let photoURL = imageSrc;
+
+      if (fileToUploadRef.current) {
         const storageRef = ref(storage, `profilePictures/${user.uid}`);
-        await uploadBytes(storageRef, profilePicture);
+        await uploadBytes(storageRef, fileToUploadRef.current);
         photoURL = await getDownloadURL(storageRef);
       }
 
-      // Update Firebase Auth profile
-      await onUpdateProfile({
-        displayName: username.trim(),
-        photoURL: photoURL,
-      });
-
-      // ALSO update Firestore user document so chat UI always shows latest data
       await setDoc(
         doc(db, "users", user.uid),
         {
-          displayName: username.trim(),
-          photoURL: photoURL,
-          uid: user.uid,
+          displayName: username,
+          photoURL,
         },
         { merge: true }
       );
 
+      onUpdateProfile({
+        ...user,
+        displayName: username,
+        photoURL,
+      });
+
       onClose();
-    } catch (error) {
-      console.error("Error updating profile:", error);
+    } catch (err) {
+      console.error("Failed to save profile settings:", err);
     } finally {
       setIsLoading(false);
     }
@@ -64,8 +76,8 @@ const Settings = ({ isOpen, onClose, user, onUpdateProfile }) => {
 
   return (
     <Modal open={isOpen} onClose={onClose}>
-      <div className={styles.modalContent}>
-        <div className={styles.modalHeader}>
+      <div className={styles.settings}>
+        <div className={styles.header}>
           <h2>Profile Settings</h2>
           <button className={styles.closeButton} onClick={onClose}>
             &times;
@@ -103,15 +115,12 @@ const Settings = ({ isOpen, onClose, user, onUpdateProfile }) => {
               >
                 Choose Image
               </button>
-              {previewUrl && (
+              {imageSrc && (
                 <div className={styles.previewContainer}>
                   <img
-                    src={previewUrl}
+                    src={imageSrc}
                     alt="Profile preview"
                     className={styles.profilePreview}
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                    }}
                   />
                 </div>
               )}
@@ -132,7 +141,7 @@ const Settings = ({ isOpen, onClose, user, onUpdateProfile }) => {
               className={styles.saveButton}
               disabled={isLoading}
             >
-              {isLoading ? "Saving..." : "Save Changes"}
+              {isLoading ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

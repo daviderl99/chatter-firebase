@@ -1,0 +1,56 @@
+.typingIndicator {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  margin: 8px 0;
+}
+
+.avatar {
+  margin-right: 8px;
+
+  img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  background-color: #f1f1f1;
+  border-radius: 16px;
+  padding: 8px 12px;
+}
+
+.dot {
+  height: 8px;
+  width: 8px;
+  margin: 0 2px;
+  background-color: #888;
+  border-radius: 50%;
+  display: inline-block;
+  animation: dotFlashing 1.5s infinite linear;
+
+  &:nth-child(2) {
+    animation-delay: 0.5s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 1s;
+  }
+}
+
+@keyframes dotFlashing {
+  0%,
+  50%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}

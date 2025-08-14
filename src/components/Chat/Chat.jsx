@@ -9,10 +9,12 @@ import {
 } from "firebase/firestore";
 import styles from "./Chat.module.scss";
 import ChatInput from "../ChatInput/ChatInput";
+import TypingIndicator from "../TypingIndicator/TypingIndicator";
 
 export default function Chat({ user, roomId }) {
   const [messages, setMessages] = useState([]);
   const [usersData, setUsersData] = useState({});
+  const [typingUsers, setTypingUsers] = useState([]);
   const messagesEndRef = useRef(null);
   const [expandedMsgId, setExpandedMsgId] = useState(null);
 
@@ -65,6 +67,24 @@ export default function Chat({ user, roomId }) {
     return () => unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId]);
+
+  // Listen for typing status in the room
+  useEffect(() => {
+    if (!roomId) return;
+    // Listen to all typing status docs in the room except current user
+    const typingRef = collection(db, `chatRooms/${roomId}/typing`);
+    const unsubscribe = onSnapshot(typingRef, (snapshot) => {
+      const typing = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (doc.id !== user.uid && data.isTyping) {
+          typing.push({ uid: doc.id });
+        }
+      });
+      setTypingUsers(typing);
+    });
+    return () => unsubscribe();
+  }, [roomId, user.uid]);
 
   // Scroll to bottom when messages update
   useEffect(() => {
@@ -154,6 +174,18 @@ export default function Chat({ user, roomId }) {
           );
         })}
         <div ref={messagesEndRef} />
+        {/* Typing indicators for other users */}
+        {typingUsers.map((typingUser) => {
+          const sender = usersData[typingUser.uid] || {};
+          return (
+            <TypingIndicator
+              key={typingUser.uid}
+              profileImage={sender.photoURL || ""}
+              isTyping={true}
+              username={sender.displayName || "User"}
+            />
+          );
+        })}
       </div>
       <ChatInput user={user} roomId={roomId} />
     </div>

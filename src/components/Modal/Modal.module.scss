@@ -2,9 +2,9 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.3);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,57 +15,8 @@
   background: white;
   padding: 1.5rem;
   border-radius: 8px;
-  width: 300px;
-
-  h3 {
-    margin-top: 0;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-
-    input {
-      margin-bottom: 1rem;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      padding: 10px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  }
-}
-
-// Shared modal UI helpers
-.modalTabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-
-  button {
-    padding: 6px 12px;
-    border: 1px solid #ddd;
-    background: #f9f9f9;
-    cursor: pointer;
-    border-radius: 6px;
-
-    &.activeTab {
-      background: #007bff;
-      color: #fff;
-      border-color: #007bff;
-    }
-  }
-}
-
-.error {
-  color: #c0392b;
-  margin-top: 8px;
-  font-size: 0.9rem;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }

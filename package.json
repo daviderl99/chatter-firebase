@@ -12,6 +12,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "compressorjs": "^1.2.1",
     "firebase": "^12.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
