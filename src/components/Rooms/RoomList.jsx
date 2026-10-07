@@ -256,22 +256,22 @@ export default function RoomList({
             </div>
           </div>
         </div>
+        <button
+          className={styles.addRoomBtn}
+          onClick={() => setModalOpen(true)}
+          title="Create or join a room"
+        >
+          <span className={styles.addRoomIcon}>+</span>
+          <span className={styles.addRoomText}>New Room</span>
+        </button>
         <ul className={styles.roomList}>
-          <button
-            className={styles.addRoomBtn}
-            onClick={() => setModalOpen(true)}
-            title="Create or join a room"
-          >
-            <span className={styles.addRoomIcon}>+</span>
-            <span className={styles.addRoomText}>New Room</span>
-          </button>
           {rooms.map((room) => (
             <li
               key={room.id}
               className={selectedRoom?.id === room.id ? styles.active : ""}
               onClick={() => onJoinRoom(room)}
             >
-              <div className={styles.avatar}>💬</div>
+              <div className={styles.avatar}>{room.name?.[0] || "#"}</div>
               <div className={styles.roomInfo}>
                 <div className={styles.name}>{room.name}</div>
                 <div className={styles.latest}>
@@ -360,7 +360,7 @@ export default function RoomList({
                   type="password"
                   required
                 />
-                {error && <div className={styles.error}>{error}</div>}
+                {error && <ErrorMessage>{error}</ErrorMessage>}
                 <button className={styles.button} type="submit">
                   Join
                 </button>
