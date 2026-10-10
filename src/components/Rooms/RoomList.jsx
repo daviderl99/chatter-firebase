@@ -9,9 +9,9 @@ import {
   updateDoc,
   deleteField,
   doc,
-  arrayUnion,
 } from "firebase/firestore";
-import { auth, db } from "../../firebase";
+import { httpsCallable } from "firebase/functions";
+import { auth, db, functions } from "../../firebase";
 import { updateProfile } from "firebase/auth";
 import styles from "./RoomList.module.scss";
 import Modal from "../Modal/Modal";
@@ -22,11 +22,9 @@ import ErrorMessage from "../shared/ErrorMessage";
 import { useRooms, MAX_UNREAD_DISPLAY } from "../../hooks/useRooms";
 import { useToast } from "../../hooks/useToast";
 import { getErrorMessage } from "../../utils/errors";
-import {
-  createPasswordFields,
-  isLegacyRoom,
-  verifyRoomPassword,
-} from "../../utils/roomPassword";
+import { createPasswordFields } from "../../utils/roomPassword";
+
+const joinRoomCallable = httpsCallable(functions, "joinRoom");
 
 export default function RoomList({
   user,
@@ -131,43 +129,28 @@ export default function RoomList({
 
     setBusy(true);
     try {
-      const snapshot = await getDocs(
-        query(collection(db, "chatRooms"), where("name", "==", roomName))
-      );
-      if (snapshot.empty) {
-        setError("Room not found");
-        return;
-      }
+      const { data: joined } = await joinRoomCallable({
+        roomName,
+        password: roomPassword,
+      });
 
-      let match = null;
-      for (const roomDoc of snapshot.docs) {
-        if (await verifyRoomPassword(roomDoc.data(), roomPassword)) {
-          match = roomDoc;
-          break;
-        }
-      }
-      if (!match) {
-        setError("Incorrect password");
-        return;
-      }
-
-      const roomRef = doc(db, "chatRooms", match.id);
-      // arrayUnion avoids duplicates if the user is already a member
-      await updateDoc(roomRef, { members: arrayUnion(user.uid) });
-
-      // Upgrade rooms that still store the password in plaintext
-      if (isLegacyRoom(match.data())) {
-        updateDoc(roomRef, {
+      if (joined.legacyRoom) {
+        updateDoc(doc(db, "chatRooms", joined.id), {
           ...(await createPasswordFields(roomPassword)),
           password: deleteField(),
         }).catch(() => {});
       }
 
-      const joined = { id: match.id, name: match.data().name };
       resetModal();
-      onJoinRoom?.(joined);
+      onJoinRoom?.({ id: joined.id, name: joined.name });
     } catch (err) {
-      toast.error(getErrorMessage(err, "Couldn't join the room."));
+      if (err.code === "functions/not-found") {
+        setError("Room not found");
+      } else if (err.code === "functions/permission-denied") {
+        setError("Incorrect password");
+      } else {
+        toast.error(getErrorMessage(err, "Couldn't join the room."));
+      }
     } finally {
       setBusy(false);
     }

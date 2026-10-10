@@ -51,14 +51,15 @@ Enable these Firebase services in your project:
 - Authentication with the Email/Password provider
 - Cloud Firestore
 - Cloud Storage
+- Cloud Functions
 
 Then publish the security rules from this repo (they cover room membership, message editing/deleting/reactions and unread markers):
 
 ```bash
-npx firebase-tools deploy --only firestore:rules,storage
+npx firebase-tools deploy --only functions,firestore:rules,storage
 ```
 
-You can also paste [firestore.rules](firestore.rules) and [storage.rules](storage.rules) into the Firebase console.
+You can also paste [firestore.rules](firestore.rules) and [storage.rules](storage.rules) into the Firebase console; the `joinRoom` Cloud Function must still be deployed with the CLI.
 
 ### 3. Run the app
 
@@ -95,6 +96,6 @@ That matches GitHub Pages deployment for a repository named `chatter-firebase`. 
 
 ## Notes
 
-This project is structured as a client-only app. Firebase rules are responsible for protecting access to rooms, messages, profile data, and uploaded files.
+The web app is client-side, with password-gated room joins handled by a trusted Cloud Function. Firebase rules protect access to rooms, messages, profile data, and uploaded files.
 
-Room passwords are verified in the browser, so room documents must be readable by signed-in users for the join flow to work. Hashing keeps the plaintext password out of the database, but a determined signed-in user could still attempt an offline guess against the hash. For stronger guarantees, move joining to a Cloud Function.
+Room passwords are verified by the `joinRoom` Cloud Function, and Firestore rules do not allow clients to add room members directly. Room documents remain readable to signed-in users, so a determined user could still attempt an offline guess against a stored password hash.
