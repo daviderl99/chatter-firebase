@@ -1,4 +1,5 @@
 import styles from "./TypingIndicator.module.scss";
+import Avatar from "../Avatar/Avatar";
 
 /**
  * Component that displays when another user is typing
@@ -14,9 +15,11 @@ const TypingIndicator = ({ profileImage, isTyping, username }) => {
 
   return (
     <div className={styles.typingIndicator}>
-      <div className={styles.avatar}>
-        <img src={profileImage} alt={`${username || "User"} avatar`} />
-      </div>
+      <Avatar
+        className={styles.avatar}
+        src={profileImage}
+        name={username}
+      />
       <div className={styles.dots}>
         <span className={styles.dot}></span>
         <span className={styles.dot}></span>

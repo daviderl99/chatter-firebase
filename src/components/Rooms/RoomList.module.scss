@@ -215,6 +215,7 @@
       background: var(--color-accent-soft);
       color: var(--color-accent);
       border-radius: var(--radius-md);
+      object-fit: cover;
       font-size: 1rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -222,6 +223,7 @@
 
     .roomInfo {
       display: flex;
+      flex: 1;
       flex-direction: column;
       min-width: 0;
 
@@ -230,6 +232,10 @@
         font-weight: 600;
         text-overflow: ellipsis;
         white-space: nowrap;
+
+        &.unreadName {
+          font-weight: 800;
+        }
       }
 
       .latest {
@@ -239,6 +245,19 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+    }
+
+    .badge {
+      flex-shrink: 0;
+      min-width: 20px;
+      padding: 1px 6px;
+      background: var(--color-accent);
+      color: var(--color-accent-contrast);
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1.4;
+      text-align: center;
     }
   }
 }

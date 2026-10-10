@@ -5,16 +5,13 @@
 }
 
 .avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
   margin-right: 8px;
-
-  img {
-    display: block;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: var(--color-surface-muted);
-  }
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--color-surface-muted);
 }
 
 .dots {
