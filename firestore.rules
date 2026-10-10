@@ -53,7 +53,18 @@ service cloud.firestore {
           && request.resource.data.members == resource.data.members.removeAll([request.auth.uid]))
         // Upgrade a legacy plaintext password to a salted hash
         || (request.auth.uid in resource.data.members
-          && changedKeys().hasOnly(['password', 'passwordHash', 'passwordSalt', 'passwordIterations']))
+          && resource.data.password is string
+          && !('passwordHash' in resource.data)
+          && !('passwordSalt' in resource.data)
+          && !('passwordIterations' in resource.data)
+          && changedKeys().hasOnly(['password', 'passwordHash', 'passwordSalt', 'passwordIterations'])
+          && !('password' in request.resource.data)
+          && request.resource.data.passwordHash is string
+          && request.resource.data.passwordHash.matches('^[A-Za-z0-9+/]{43}=$')
+          && request.resource.data.passwordSalt is string
+          && request.resource.data.passwordSalt.matches('^[A-Za-z0-9+/]{22}==$')
+          && request.resource.data.passwordIterations is int
+          && request.resource.data.passwordIterations == 150000)
         // Owner: remove exactly one other member
         || (resource.data.createdBy == request.auth.uid
           && changedKeys().hasOnly(['members'])
