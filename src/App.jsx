@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import LoadingSpinner from "./components/LoadingSpinner/LoadingSpinner";
@@ -12,6 +12,8 @@ function App() {
   const [room, setRoom] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const closeRoom = useCallback(() => setRoom(null), []);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -28,7 +30,7 @@ function App() {
   if (!user) {
     return <AuthForm onAuth={setUser} />;
   }
-20
+
   return (
     <>
       <div className={`app-split ${isSidebarOpen ? "with-sidebar" : "full"}`}>
@@ -36,12 +38,20 @@ function App() {
           user={user}
           selectedRoom={room}
           onJoinRoom={setRoom}
-          onLogout={() => signOut(auth)}
+          onLogout={() => {
+            setRoom(null);
+            signOut(auth);
+          }}
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
         />
         {room ? (
-          <Chat user={user} roomId={room.id} />
+          <Chat
+            key={room.id}
+            user={user}
+            roomId={room.id}
+            onRoomClosed={closeRoom}
+          />
         ) : (
           <div className="chat-placeholder">Select a room</div>
         )}

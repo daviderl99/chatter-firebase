@@ -1,11 +1,10 @@
 .error {
-  background: #ffeaea;
-  border: 1px solid #ffb3b3;
-  color: #c0392b;
-  border-radius: 6px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
+  padding: 10px 12px;
+  background: var(--color-danger-soft);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-danger-text);
+  font-size: 0.875rem;
   text-align: left;
   word-break: break-word;
 }

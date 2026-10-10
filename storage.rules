@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /profilePictures/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Room images: anyone signed in can view; only the room's owner can write
+    match /roomImages/{roomId}/{file} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && firestore.get(/databases/(default)/documents/chatRooms/$(roomId)).data.createdBy == request.auth.uid;
+    }
+
+    // Chat images (also allows deleting them with their message or room)
+    match /chatRooms/{roomId}/images/{file} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

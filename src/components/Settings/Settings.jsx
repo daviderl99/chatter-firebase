@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { compressImage } from "../../utils/compressImage";
+import { useToast } from "../../hooks/useToast";
+import { getErrorMessage } from "../../utils/errors";
 import styles from "./Settings.module.scss";
 import Modal from "../Modal/Modal";
 
@@ -9,6 +11,7 @@ const storage = getStorage();
 const db = getFirestore();
 
 const Settings = ({ isOpen, onClose, user, onUpdateProfile }) => {
+  const toast = useToast();
   const [username, setUsername] = useState(user.displayName || "");
   const [imageSrc, setImageSrc] = useState(user.photoURL || "");
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +37,7 @@ const Settings = ({ isOpen, onClose, user, onUpdateProfile }) => {
       fileToUploadRef.current = compressed;
       setImageSrc(URL.createObjectURL(compressed));
     } catch (err) {
-      console.error("Image compression failed:", err);
+      toast.error(getErrorMessage(err, "Couldn't process that image."));
     }
   };
 
@@ -60,15 +63,12 @@ const Settings = ({ isOpen, onClose, user, onUpdateProfile }) => {
         { merge: true }
       );
 
-      onUpdateProfile({
-        ...user,
-        displayName: username,
-        photoURL,
-      });
+      await onUpdateProfile({ displayName: username, photoURL });
 
+      toast.success("Profile updated.");
       onClose();
     } catch (err) {
-      console.error("Failed to save profile settings:", err);
+      toast.error(getErrorMessage(err, "Couldn't save your profile."));
     } finally {
       setIsLoading(false);
     }

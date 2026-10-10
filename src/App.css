@@ -1,29 +1,33 @@
 .app-split {
   display: flex;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   transition: padding-left 0.3s ease;
   will-change: padding-left;
 }
 
-.chat-placeholder {
-  flex: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #888;
-  font-size: 1.2rem;
-  background: #f9f9f9;
-}
-
 .app-split.full {
   padding-left: 0;
-  /* full width when sidebar closed */
 }
 
+/* Reserve space for the fixed sidebar when it is open */
 .app-split.with-sidebar {
-  padding-left: 260px;
-  /* reserve space for fixed left sidebar when open */
+  padding-left: var(--sidebar-width);
+}
+
+.chat-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 1.05rem;
+  background: var(--color-bg);
 }
 
 /* On small screens, let the sidebar overlay the chat instead of reserving space */
