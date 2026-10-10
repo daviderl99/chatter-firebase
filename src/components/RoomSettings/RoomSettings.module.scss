@@ -1,0 +1,229 @@
+.settings {
+  min-width: min(80vw, 360px);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+}
+
+.roomName {
+  margin: 2px 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  transition: background-color var(--transition), color var(--transition);
+
+  &:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.count {
+  padding: 0 7px;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+}
+
+.members {
+  max-height: 260px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--color-surface-muted);
+}
+
+.memberName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag {
+  padding: 1px 8px;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &.owner {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+  }
+}
+
+.danger {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.imageRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.roomImage {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  font-size: 1.5rem;
+}
+
+.imageActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .sectionTitle {
+    margin: 0;
+  }
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.primaryButton {
+  background: var(--color-accent);
+  border: none;
+  color: #fff;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.secondaryButton {
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.linkButton,
+.removeButton {
+  padding: 2px 6px;
+  background: none;
+  border: none;
+  color: var(--color-danger-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.dangerButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.65rem 1rem;
+  background: var(--color-danger-soft);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-danger-text);
+  font-weight: 600;
+  transition: background-color var(--transition), color var(--transition);
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: var(--color-danger);
+    color: #fff;
+  }
+}

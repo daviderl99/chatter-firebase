@@ -1,0 +1,319 @@
+@keyframes msgIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  animation: msgIn 200ms ease-out;
+
+  &.own {
+    align-items: flex-end;
+
+    .row {
+      flex-direction: row-reverse;
+    }
+
+    .content {
+      align-items: flex-end;
+    }
+
+    .bubble {
+      background: var(--bubble-own-bg);
+      color: var(--bubble-own-text);
+      border-top-left-radius: var(--radius-md);
+      border-top-right-radius: 4px;
+    }
+
+    .reactions {
+      justify-content: flex-end;
+    }
+  }
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--color-surface-muted);
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+.username {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.timestamp {
+  margin: 6px 4px 0;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  user-select: none;
+  animation: fadeDown 180ms ease-out;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 100%;
+  margin-top: 4px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.bubble {
+  margin: 0;
+  padding: 8px 14px;
+  background: var(--bubble-other-bg);
+  color: var(--bubble-other-text);
+  border-radius: var(--radius-md);
+  border-top-left-radius: 4px;
+  line-height: 1.45;
+  cursor: pointer;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+
+  @media (min-width: 500px) {
+    max-width: min(50vw, 560px);
+  }
+}
+
+.image {
+  display: block;
+  max-width: min(70vw, 420px);
+  max-height: 60vh;
+  width: auto;
+  height: auto;
+  margin-bottom: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  box-shadow: var(--shadow-sm);
+  cursor: zoom-in;
+}
+
+.edited {
+  margin: 2px 6px 0;
+  font-size: 0.7rem;
+  color: var(--color-text-faint);
+  user-select: none;
+}
+
+// Hover / expanded action bar
+.actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 2px;
+  padding: 2px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+
+.row:hover .actions,
+.row:focus-within .actions,
+.actionsOpen {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  transition: background-color var(--transition), color var(--transition);
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  &:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+  }
+
+  &.danger:hover {
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+  }
+}
+
+// Only shown on devices without hover, where tapping the bubble is the other entry point
+.touchOnly {
+  display: none;
+
+  @media (hover: none) {
+    display: flex;
+  }
+}
+
+.picker {
+  position: fixed;
+  z-index: 3500;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  animation: fadeDown 120ms ease-out;
+}
+
+.pickerEmoji {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 1.2rem;
+  line-height: 1;
+  transition: background-color var(--transition), transform var(--transition);
+
+  &:hover {
+    background: var(--color-surface-hover);
+    transform: scale(1.15);
+  }
+}
+
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  transition: background-color var(--transition), border-color var(--transition);
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+
+  &.mine {
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .count {
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+// Inline editor
+.editBox {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(80vw, 440px);
+}
+
+.editInput {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--focus-ring);
+  line-height: 1.45;
+  resize: none;
+  outline: none;
+}
+
+.editFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+
+  button {
+    padding: 4px 12px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+}
+
+.editHint {
+  flex: 1;
+  font-size: 0.72rem;
+  color: var(--color-text-faint);
+}
+
+.editCancel {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+
+.editSave {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}

@@ -1,0 +1,64 @@
+.dialog {
+  min-width: min(80vw, 320px);
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.message {
+  margin: 0 0 20px;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  button {
+    min-width: 88px;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background-color var(--transition), opacity var(--transition);
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.cancel {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+  }
+}
+
+.confirm {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+
+  &:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+  }
+
+  &.danger {
+    background: var(--color-danger);
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      filter: brightness(0.92);
+    }
+  }
+}
