@@ -7,8 +7,11 @@ import ImageIcon from "../icons/ImageIcon";
 import LoaderCircleIcon from "../icons/LoaderCircleIcon";
 import SendIcon from "../icons/SendIcon";
 import { doc, setDoc } from "firebase/firestore";
+import { useToast } from "../../hooks/useToast";
+import { getErrorMessage } from "../../utils/errors";
 
 export default function ChatInput({ user, roomId }) {
+  const toast = useToast();
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
@@ -26,11 +29,11 @@ export default function ChatInput({ user, roomId }) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      alert("Please select an image file.");
+      toast.error("Please select an image file.");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image is too large (max 5MB).");
+      toast.error("Image is too large (max 5MB).");
       return;
     }
     setImageFile(file);
@@ -64,11 +67,12 @@ export default function ChatInput({ user, roomId }) {
 
   const setTypingStatus = (isTyping) => {
     if (!roomId || !user?.uid) return;
+    // Typing flags are best-effort; failures (e.g. after leaving a room) are ignored
     setDoc(
       doc(db, `chatRooms/${roomId}/typing`, user.uid),
       { isTyping },
       { merge: true }
-    );
+    ).catch(() => {});
   };
 
   // Mark as not typing when input loses focus
@@ -108,8 +112,7 @@ export default function ChatInput({ user, roomId }) {
         timestamp: serverTimestamp(),
       });
     } catch (err) {
-      console.error("Failed to send message:", err);
-      alert("Failed to send message. Please try again.");
+      toast.error(getErrorMessage(err, "Failed to send message. Please try again."));
     } finally {
       setUploading(false);
       clearSelectedImage();
