@@ -73,9 +73,32 @@ service cloud.firestore {
         allow create: if isMember(roomId)
           && request.resource.data.uid == request.auth.uid;
 
+        function togglesOwnReaction(emoji) {
+          let oldReactions = resource.data.get('reactions', {});
+          let newReactions = request.resource.data.get('reactions', {});
+          let oldUsers = oldReactions.get(emoji, []);
+          let newUsers = newReactions.get(emoji, []);
+          return oldUsers is list
+            && newUsers is list
+            && newReactions.diff(oldReactions).affectedKeys().hasOnly([emoji])
+            && oldUsers.removeAll([request.auth.uid]) == newUsers.removeAll([request.auth.uid])
+            && ((!oldUsers.hasAny([request.auth.uid])
+                && newUsers.hasAny([request.auth.uid])
+                && newUsers.size() == oldUsers.size() + 1)
+              || (oldUsers.hasAny([request.auth.uid])
+                && !newUsers.hasAny([request.auth.uid])
+                && oldUsers.size() == newUsers.size() + 1));
+        }
+
         allow update: if isMember(roomId) && (
           // Anyone in the room can react
-          changedKeys().hasOnly(['reactions'])
+          (changedKeys().hasOnly(['reactions'])
+            && (togglesOwnReaction('👍')
+              || togglesOwnReaction('❤️')
+              || togglesOwnReaction('😂')
+              || togglesOwnReaction('😮')
+              || togglesOwnReaction('😢')
+              || togglesOwnReaction('🙏')))
           // Only the author can edit
           || (resource.data.uid == request.auth.uid
             && changedKeys().hasOnly(['text', 'editedAt']))
