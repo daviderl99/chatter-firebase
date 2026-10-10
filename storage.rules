@@ -2,6 +2,32 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    function room(roomId) {
+      return firestore.get(
+        /databases/(default)/documents/chatRooms/$(roomId)
+      ).data;
+    }
+
+    function isRoomMember(roomId) {
+      return request.auth != null
+        && request.auth.uid in room(roomId).members;
+    }
+
+    function isRoomOwner(roomId) {
+      return request.auth != null
+        && room(roomId).createdBy == request.auth.uid;
+    }
+
+    function isUploader(file) {
+      return request.auth != null
+        && file.matches('^' + request.auth.uid + '-.*');
+    }
+
+    function isValidImageUpload() {
+      return request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     match /profilePictures/{uid} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == uid;
@@ -16,7 +42,15 @@ service firebase.storage {
 
     // Chat images (also allows deleting them with their message or room)
     match /chatRooms/{roomId}/images/{file} {
-      allow read, write: if request.auth != null;
+      allow read: if isRoomMember(roomId);
+      allow create: if isRoomMember(roomId)
+        && isUploader(file)
+        && isValidImageUpload();
+      allow update: if isRoomMember(roomId)
+        && (isUploader(file) || isRoomOwner(roomId))
+        && isValidImageUpload();
+      allow delete: if isRoomMember(roomId)
+        && (isUploader(file) || isRoomOwner(roomId));
     }
   }
 }
